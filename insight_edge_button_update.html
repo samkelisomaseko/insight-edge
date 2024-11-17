@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insight Edge - Enhanced Monitoring</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&family=Exo+2:wght@200;400;700&family=Audiowide&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00a8ff;
+            --secondary: #9c88ff;
+            --background: #1e272e;
+            --surface: rgba(47, 54, 64, 0.8);
+            --text: #f5f6fa;
+            --accent: #fbc531;
+        }
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(to bottom right, #1e272e, #000000);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+        }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(20px, 4vw, 24px);
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        input[type="url"] {
+            padding: 10px;
+            border-radius: 5px;
+            margin-right: 10px;
+            border: 1px solid var(--primary);
+            background-color: var(--surface);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            transition: border-color 0.3s;
+            flex: 1 1 auto;
+        }
+        input[type="url"]:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        button {
+            background-color: var(--primary);
+            color: var(--text);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: var(--secondary);
+            transform: scale(1.05);
+        }
+        .card {
+            background-color: var(--surface);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--primary);
+        }
+        #analyticsChart {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <h1>Insight Edge</h1>
+        </div>
+        <input type="url" id="urlInput" placeholder="Enter URL to monitor">
+        <button id="monitoringBtn">Start Monitoring</button>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Monitoring Control</h2>
+            <p>Status: <span id="monitoringStatus">Inactive</span></p>
+        </div>
+
+        <div class="card">
+            <h2>Analytics</h2>
+            <canvas id="analyticsChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Predictions</h2>
+            <p>Next Prediction: <span id="predictedMultiplier">Calculating...</span></p>
+        </div>
+    </div>
+
+    <script>
+        const monitor = {
+            isMonitoring: false,
+            liveData: [],
+            predictionInterval: null,
+            chart: null,
+
+            init() {
+                document.getElementById("monitoringBtn").addEventListener("click", () => {
+                    if (!this.validateUrl()) {
+                        alert("Please enter a valid URL!");
+                        return;
+                    }
+                    this.toggleMonitoring();
+                });
+                this.initChart();
+            },
+
+            validateUrl() {
+                const url = document.getElementById("urlInput").value;
+                try {
+                    new URL(url);
+                    return true;
+                } catch (_) {
+                    return false;
+                }
+            },
+
+            toggleMonitoring() {
+                this.isMonitoring = !this.isMonitoring;
+                const monitoringBtn = document.getElementById("monitoringBtn");
+                const statusText = document.getElementById("monitoringStatus");
+
+                if (this.isMonitoring) {
+                    statusText.textContent = "Active";
+                    monitoringBtn.textContent = "Stop Monitoring";
+                    this.startMonitoring();
+                } else {
+                    statusText.textContent = "Inactive";
+                    monitoringBtn.textContent = "Start Monitoring";
+                    this.stopMonitoring();
+                }
+            },
+
+            startMonitoring() {
+                this.predictionInterval = setInterval(() => {
+                    try {
+                        this.fetchLiveData();
+                        this.makePrediction();
+                    } catch (error) {
+                        console.error("Error in monitoring process:", error);
+                    }
+                }, 1000); // Real-time updates every second
+            },
+
+            stopMonitoring() {
+                clearInterval(this.predictionInterval);
+            },
+
+            fetchLiveData() {
+                const simulatedData = (Math.random() * 10 + 1).toFixed(2);
+                this.liveData.push(Number(simulatedData));
+                if (this.liveData.length > 100) {
+                    this.liveData.shift();
+                }
+                this.updateChart(simulatedData);
+            },
+
+            makePrediction() {
+                if (this.liveData.length >= 5) {
+                    const recentData = this.liveData.slice(-5);
+                    const weightedAvg = recentData.reduce((a, b, i) => a + b * (i + 1), 0) / 15;
+                    const prediction = weightedAvg * 1.1;
+                    document.getElementById("predictedMultiplier").textContent = prediction.toFixed(2);
+                }
+            },
+
+            updateChart(multiplier) {
+                if (this.chart.data.labels.length >= 100) {
+                    this.chart.data.labels.shift();
+                    this.chart.data.datasets[0].data.shift();
+                }
+                this.chart.data.labels.push(this.chart.data.labels.length + 1);
+                this.chart.data.datasets[0].data.push(multiplier);
+                this.chart.update();
+            },
+
+            initChart() {
+                const ctx = document.getElementById("analyticsChart").getContext("2d");
+                this.chart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: "Live Data",
+                            data: [],
+                            borderColor: "rgb(75, 192, 192)",
+                            tension: 0.1,
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                            },
+                        },
+                    },
+                });
+            },
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            monitor.init();
+        });
+    </script>
+</body>
+</html>
