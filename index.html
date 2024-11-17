@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,116 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Insight Edge - Enhanced Monitoring</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&family=Exo+2:wght@200;400;700&family=Audiowide&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&family=Exo+2:wght@200;400;700&family=Audiowide&display=swap&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00a8ff;
-            --secondary: #9c88ff;
-            --background: #1e272e;
-            --surface: rgba(47, 54, 64, 0.8);
-            --text: #f5f6fa;
-            --accent: #fbc531;
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --background: #212529;
+            --surface: rgba(33, 37, 41, 0.9);
+            --text: #ffffff;
+            --accent: #ffc107;
+            --font-title: 'Orbitron', sans-serif;
+            --font-body: 'Exo 2', sans-serif;
+            --font-secondary: 'Rajdhani', sans-serif;
+            --font-tertiary: 'Audiowide', sans-serif;
+            --font-quaternary: 'Inter', sans-serif;
+            --font-bold: 'Rajdhani', sans-serif; /* Bold font for buttons */
         }
+
         body {
-            font-family: 'Exo 2', sans-serif;
-            background: linear-gradient(to bottom right, #1e272e, #000000);
+            font-family: var(--font-body);
+            background: linear-gradient(to bottom right, var(--background), #000);
             color: var(--text);
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+
         header {
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            background-color: var(--surface);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
         .logo {
             display: flex;
             align-items: center;
         }
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background-color: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-right: 10px;
-        }
+
         h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(20px, 4vw, 24px);
+            font-family: var(--font-title);
+            font-size: clamp(24px, 5vw, 32px);
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin: 0;
         }
-        input[type="url"] {
+
+        input[type="url"], button {
             padding: 10px;
             border-radius: 5px;
-            margin-right: 10px;
             border: 1px solid var(--primary);
+            margin: 0 5px;
+            outline: none;
+            font-family: var(--font-quaternary);
+            font-size: clamp(14px, 2vw, 18px);
+        }
+
+        input[type="url"] {
             background-color: var(--surface);
             color: var(--text);
-            font-family: 'Rajdhani', sans-serif;
-            transition: border-color 0.3s;
-            flex: 1 1 auto;
+            flex-grow: 1; /* Make input fill space */
         }
-        input[type="url"]:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
+
         button {
             background-color: var(--primary);
             color: var(--text);
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
             cursor: pointer;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: bold;
-            transition: background-color 0.3s, transform 0.3s;
+            font-weight: 700; /* Make the button label bold */
+            font-family: var(--font-bold); /* Apply bold font */
+            transition: background-color 0.3s;
         }
+
         button:hover {
-            background-color: var(--secondary);
-            transform: scale(1.05);
+            background-color: var(--accent);
         }
+
+        .container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
         .card {
             background-color: var(--surface);
             border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--surface);
+            color: var(--text);
+            font-family: var(--font-tertiary); /* Change font for footer */
+        }
+
         h2 {
-            font-family: 'Rajdhani', sans-serif;
-            color: var(--primary);
+            font-family: var(--font-secondary);
+            font-size: clamp(20px, 4vw, 28px);
+            margin: 0 0 10px 0;
         }
-        #analyticsChart {
-            width: 100%;
-            height: 300px;
+
+        canvas {
+            width: 100% !important; /* Ensure full width */
+            height: 300px !important; /* Set fixed height for responsiveness */
+        }
+
+        @media (min-width: 768px) {
+            .card:nth-child(4) {
+                grid-column: span 2; /* Make analytics card span two columns */
+                flex: 2;
+                max-height: 400px; /* Set an appropriate max height */
+            }
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            h1 {
+                font-size: clamp(20px, 5vw, 28px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            input[type="url"], button {
+                font-size: clamp(12px, 3vw, 16px);
+            }
+            h1 {
+                font-size: clamp(18px, 6vw, 24px);
+            }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">
-            <div class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-            </div>
             <h1>Insight Edge</h1>
         </div>
-        <input type="url" id="urlInput" placeholder="Enter URL to monitor">
-        <button id="monitoringBtn">Start Monitoring</button>
+        <div style="flex-grow: 1; display: flex; align-items: center;">
+            <input type="url" id="urlInput" placeholder="Enter URL to monitor" required>
+            <button id="monitoringBtn">Start Monitoring</button>
+        </div>
     </header>
 
     <div class="container">
@@ -125,15 +171,24 @@
         </div>
 
         <div class="card">
-            <h2>Analytics</h2>
-            <canvas id="analyticsChart"></canvas>
+            <h2>Current Round</h2>
+            <p>Round Status: <span id="currentRound">Fetching...</span></p>
         </div>
 
         <div class="card">
-            <h2>Predictions</h2>
-            <p>Next Prediction: <span id="predictedMultiplier">Calculating...</span></p>
+            <h2>Next Round Prediction</h2>
+            <p>Next Round: <span id="nextRoundPrediction">Calculating...</span></p>
+        </div>
+
+        <div class="card">
+            <h2>Analytics</h2>
+            <canvas id="analyticsChart"></canvas>
         </div>
     </div>
+
+    <footer>
+        &copy; 2024 Insight Edge | Developed by <a href="https://shamase.co" target="_blank">Shamase</a>. All rights reserved.
+    </footer>
 
     <script>
         const monitor = {
@@ -144,81 +199,127 @@
 
             init() {
                 document.getElementById("monitoringBtn").addEventListener("click", () => {
-                    if (!this.validateUrl()) {
-                        alert("Please enter a valid URL!");
+                    const urlInput = document.getElementById("urlInput").value;
+                    if (!this.validateUrl(urlInput)) {
+                        alert("Please enter a valid URL from a known Aviator site!");
                         return;
                     }
-                    this.toggleMonitoring();
+                    this.toggleMonitoring(urlInput);
                 });
                 this.initChart();
             },
 
-            validateUrl() {
-                const url = document.getElementById("urlInput").value;
+            validateUrl(url) {
+                // Check if the URL is an aviator URL. You can customize the domains as needed.
+                const allowedDomains = [
+                    'aviator-exclusiva.com', 
+                    'aviator.com',
+                    'mulasport.com',
+                    'ebet.ls/games/go/spribe?id=aviator',
+                    'aviator-exclusiva-bet-api.p.rapidapi.com'
+                ];
+
                 try {
-                    new URL(url);
-                    return true;
+                    const parsedUrl = new URL(url);
+                    return allowedDomains.includes(parsedUrl.hostname);
                 } catch (_) {
-                    return false;
+                    return false; // Invalid URL
                 }
             },
 
-            toggleMonitoring() {
+            toggleMonitoring(url) {
                 this.isMonitoring = !this.isMonitoring;
-                const monitoringBtn = document.getElementById("monitoringBtn");
                 const statusText = document.getElementById("monitoringStatus");
+                const monitoringBtn = document.getElementById("monitoringBtn");
 
                 if (this.isMonitoring) {
                     statusText.textContent = "Active";
-                    monitoringBtn.textContent = "Stop Monitoring";
-                    this.startMonitoring();
+                    monitoringBtn.textContent = "Stop Monitoring"; // Change button text
+                    this.startMonitoring(url);
                 } else {
                     statusText.textContent = "Inactive";
-                    monitoringBtn.textContent = "Start Monitoring";
+                    monitoringBtn.textContent = "Start Monitoring"; // Change button text back
                     this.stopMonitoring();
                 }
             },
 
-            startMonitoring() {
+            startMonitoring(url) {
                 this.predictionInterval = setInterval(() => {
-                    try {
-                        this.fetchLiveData();
-                        this.makePrediction();
-                    } catch (error) {
-                        console.error("Error in monitoring process:", error);
-                    }
-                }, 1000); // Real-time updates every second
+                    this.fetchLiveData();
+                    this.updateRounds();
+                }, 3000); // Adjust interval for real data fetching
             },
 
             stopMonitoring() {
                 clearInterval(this.predictionInterval);
             },
 
-            fetchLiveData() {
-                const simulatedData = (Math.random() * 10 + 1).toFixed(2);
-                this.liveData.push(Number(simulatedData));
-                if (this.liveData.length > 100) {
-                    this.liveData.shift();
+            async fetchLiveData() {
+                const url = "http://localhost:3000/api/live-data"; // Use your backend endpoint
+                try {
+                    const response = await fetch(url); // Fetch from your backend
+                    if (!response.ok) {
+                        throw new Error(`Network response was not okay: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log(data); // Debug information
+                    const liveValue = (data && data.value !== undefined) ? data.value : null; // Check for data structure 
+
+                    if (liveValue === null) {
+                        throw new Error("Invalid live data received.");
+                    }
+
+                    const timestamp = new Date().toLocaleTimeString(); // Get current time
+                    this.liveData.push({ time: timestamp, value: liveValue });
+                    
+                    if (this.liveData.length > 100) {
+                        this.liveData.shift(); // Keep the latest 100 entries
+                    }
+                    this.updateChart();
+                } catch (error) {
+                    console.error("Error fetching live data:", error); // Improved logging
                 }
-                this.updateChart(simulatedData);
             },
 
-            makePrediction() {
-                if (this.liveData.length >= 5) {
-                    const recentData = this.liveData.slice(-5);
-                    const weightedAvg = recentData.reduce((a, b, i) => a + b * (i + 1), 0) / 15;
-                    const prediction = weightedAvg * 1.1;
-                    document.getElementById("predictedMultiplier").textContent = prediction.toFixed(2);
+            async updateRounds() {
+                // Fetch current round and next prediction from your backend
+                try {
+                    const url = "http://localhost:3000/api/predictions"; // Update with your actual endpoint
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not okay: ${response.status} ${response.statusText}`);
+                    }
+
+                    const predictions = await response.json();
+                    const currentRound = predictions.currentRound; // Validate response structure
+                    const nextPrediction = predictions.nextPrediction;
+
+                    if (currentRound === undefined || nextPrediction === undefined) {
+                        throw new Error("Invalid prediction data structure received.");
+                    }
+
+                    document.getElementById("currentRound").textContent = currentRound;
+                    document.getElementById("nextRoundPrediction").textContent = nextPrediction;
+                } catch (error) {
+                    console.error("Error fetching predictions:", error);
+                    document.getElementById("currentRound").textContent = "Error"; // Provide fallback UI feedback
+                    document.getElementById("nextRoundPrediction").textContent = "Error"; // Provide fallback UI feedback
                 }
             },
 
-            updateChart(multiplier) {
+            updateChart() {
+                const labels = this.liveData.map(data => data.time); // Extract time for labels
+                const values = this.liveData.map(data => data.value); // Extract values for data
+
+                this.chart.data.labels = labels;
+                this.chart.data.datasets[0].data = values;
+
+                // Reset the chart if it exceeds 100 entries
                 if (this.chart.data.labels.length >= 100) {
                     this.chart.data.labels.shift();
                     this.chart.data.datasets[0].data.shift();
                 }
-                this.chart.data.labels.push(this.chart.data.labels.length + 1);
-                this.chart.data.datasets[0].data.push(multiplier);
                 this.chart.update();
             },
 
@@ -227,7 +328,7 @@
                 this.chart = new Chart(ctx, {
                     type: "line",
                     data: {
-                        labels: [],
+                        labels: [], // Initialized with empty labels
                         datasets: [{
                             label: "Live Data",
                             data: [],
@@ -240,6 +341,16 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Value',
+                                },
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time',
+                                },
                             },
                         },
                     },
@@ -247,9 +358,7 @@
             },
         };
 
-        document.addEventListener("DOMContentLoaded", () => {
-            monitor.init();
-        });
+        document.addEventListener("DOMContentLoaded", () => monitor.init());
     </script>
 </body>
 </html>
