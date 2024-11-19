@@ -31,6 +31,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease;
         }
 
         header {
@@ -64,12 +65,17 @@
             outline: none;
             font-family: var(--font-quaternary);
             font-size: clamp(14px, 2vw, 18px);
+            transition: border-color 0.3s;
+        }
+
+        input[type="url"]:focus, button:hover {
+            border-color: var(--accent);
         }
 
         input[type="url"] {
             background-color: var(--surface);
             color: var(--text);
-            flex-grow: 1; /* Make input fill space */
+            flex-grow: 1;
         }
 
         button {
@@ -77,8 +83,8 @@
             color: var(--text);
             border: none;
             cursor: pointer;
-            font-weight: 700; /* Make the button label bold */
-            font-family: var(--font-bold); /* Apply bold font */
+            font-weight: 700;
+            font-family: var(--font-bold);
             transition: background-color 0.3s;
         }
 
@@ -99,6 +105,13 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            overflow: auto;
+            max-width: 100%;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
         }
 
         footer {
@@ -106,7 +119,7 @@
             padding: 20px;
             background-color: var(--surface);
             color: var(--text);
-            font-family: var(--font-tertiary); /* Change font for footer */
+            font-family: var(--font-tertiary);
         }
 
         h2 {
@@ -116,15 +129,63 @@
         }
 
         canvas {
-            width: 100% !important; /* Ensure full width */
-            height: 300px !important; /* Set fixed height for responsiveness */
+            width: 100% !important;
+            height: clamp(200px, 30vw, 300px) !important;
+        }
+
+        .feedback {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 15px;
+        }
+
+        .feedback input[type="text"] {
+            width: calc(100% - 20px);
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid var(--primary);
+            color: var(--text);
+            background-color: var(--surface);
+        }
+
+        .feedback button {
+            align-self: flex-end;
+            margin-top: 10px;
+        }
+
+        #errorMessage {
+            color: red;
+            margin-left: 10px;
+        }
+
+        #urlInstruction {
+            color: var(--accent);
+            margin-left: 10px;
+            display: inline; /* Default to inline */
+        }
+
+        @media (max-width: 480px) {
+            #urlInstruction {
+                display: block; /* Stack below the input on small screens */
+                margin-top: 5px; /* Add margin for spacing */
+                margin-left: 0; /* Remove left margin to align with input */
+            }
+        }
+
+        @media (min-width: 481px) {
+            #urlInstruction {
+                display: inline; /* Show inline on larger screens */
+                margin-top: 0;
+            }
         }
 
         @media (min-width: 768px) {
             .card:nth-child(4) {
-                grid-column: span 2; /* Make analytics card span two columns */
+                grid-column: span 2;
                 flex: 2;
-                max-height: 400px; /* Set an appropriate max height */
+                max-height: 400px;
             }
         }
 
@@ -150,6 +211,9 @@
             h1 {
                 font-size: clamp(18px, 6vw, 24px);
             }
+            .card {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -159,9 +223,10 @@
             <h1>Insight Edge</h1>
         </div>
         <div style="flex-grow: 1; display: flex; align-items: center;">
-            <input type="url" id="urlInput" placeholder="Enter URL to monitor" required>
-            <button id="monitoringBtn">Start Monitoring</button>
+            <input type="url" id="urlInput" placeholder="Enter URL to monitor" aria-label="URL input" required>
+            <button id="monitoringBtn" aria-label="Start Monitoring">Start Monitoring</button>
         </div>
+        <div id="errorMessage"></div> <!-- Error message display area -->
     </header>
 
     <div class="container">
@@ -184,6 +249,14 @@
             <h2>Analytics</h2>
             <canvas id="analyticsChart"></canvas>
         </div>
+
+        <div class="card feedback">
+            <h2>User Feedback</h2>
+            <p>Please provide your feedback on the predictions:</p>
+            <input type="text" id="userFeedback" placeholder="Your feedback here...">
+            <button id="submitFeedback">Submit Feedback</button>
+            <div id="feedbackMessage" style="color: green; margin-top: 10px;"></div> <!-- Feedback response area -->
+        </div>
     </div>
 
     <footer>
@@ -200,23 +273,36 @@
             init() {
                 document.getElementById("monitoringBtn").addEventListener("click", () => {
                     const urlInput = document.getElementById("urlInput").value;
+                    const errorMessageElement = document.getElementById("errorMessage");
+                    errorMessageElement.textContent = ""; // Clear previous error message
                     if (!this.validateUrl(urlInput)) {
-                        alert("Please enter a valid URL from a known Aviator site!");
+                        errorMessageElement.textContent = "Please enter a valid URL from a known Aviator site!";
                         return;
                     }
                     this.toggleMonitoring(urlInput);
                 });
+
+                document.getElementById("submitFeedback").addEventListener("click", () => {
+                    const feedback = document.getElementById("userFeedback").value;
+                    const feedbackMessageElement = document.getElementById("feedbackMessage");
+                    feedbackMessageElement.textContent = ""; // Clear previous feedback message
+                    if (feedback) {
+                        this.submitFeedback(feedback);
+                    } else {
+                        feedbackMessageElement.textContent = "Please provide feedback before submitting.";
+                    }
+                });
+
                 this.initChart();
             },
 
             validateUrl(url) {
-                // Check if the URL is an aviator URL. You can customize the domains as needed.
                 const allowedDomains = [
                     'aviator-exclusiva.com', 
                     'aviator.com',
                     'mulasport.com',
                     'ebet.ls/games/go/spribe?id=aviator',
-                    'aviator-exclusiva-bet-api.p.rapidapi.com'
+                    'bet7k-aviator-api.p.rapidapi.com'
                 ];
 
                 try {
@@ -234,11 +320,11 @@
 
                 if (this.isMonitoring) {
                     statusText.textContent = "Active";
-                    monitoringBtn.textContent = "Stop Monitoring"; // Change button text
+                    monitoringBtn.textContent = "Stop Monitoring"; 
                     this.startMonitoring(url);
                 } else {
                     statusText.textContent = "Inactive";
-                    monitoringBtn.textContent = "Start Monitoring"; // Change button text back
+                    monitoringBtn.textContent = "Start Monitoring"; 
                     this.stopMonitoring();
                 }
             },
@@ -247,52 +333,52 @@
                 this.predictionInterval = setInterval(() => {
                     this.fetchLiveData();
                     this.updateRounds();
-                }, 3000); // Adjust interval for real data fetching
+                }, 3000); 
+                document.getElementById("errorMessage").textContent = "Monitoring started successfully!";
             },
 
             stopMonitoring() {
                 clearInterval(this.predictionInterval);
+                document.getElementById("errorMessage").textContent = "Monitoring stopped.";
             },
 
             async fetchLiveData() {
-                const url = "http://localhost:3000/api/live-data"; // Use your backend endpoint
+                const url = "http://localhost:3000/api/live-data"; 
                 try {
-                    const response = await fetch(url); // Fetch from your backend
+                    const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`Network response was not okay: ${response.status} ${response.statusText}`);
                     }
 
                     const data = await response.json();
-                    console.log(data); // Debug information
-                    const liveValue = (data && data.value !== undefined) ? data.value : null; // Check for data structure 
+                    const liveValue = (data && data.value !== undefined) ? data.value : null; 
 
                     if (liveValue === null) {
                         throw new Error("Invalid live data received.");
                     }
 
-                    const timestamp = new Date().toLocaleTimeString(); // Get current time
+                    const timestamp = new Date().toLocaleTimeString();
                     this.liveData.push({ time: timestamp, value: liveValue });
                     
                     if (this.liveData.length > 100) {
-                        this.liveData.shift(); // Keep the latest 100 entries
+                        this.liveData.shift(); 
                     }
                     this.updateChart();
                 } catch (error) {
-                    console.error("Error fetching live data:", error); // Improved logging
+                    console.error("Error fetching live data:", error);
                 }
             },
 
             async updateRounds() {
-                // Fetch current round and next prediction from your backend
                 try {
-                    const url = "http://localhost:3000/api/predictions"; // Update with your actual endpoint
+                    const url = "http://localhost:3000/api/predictions"; 
                     const response = await fetch(url);
                     if (!response.ok) {
                         throw new Error(`Network response was not okay: ${response.status} ${response.statusText}`);
                     }
 
                     const predictions = await response.json();
-                    const currentRound = predictions.currentRound; // Validate response structure
+                    const currentRound = predictions.currentRound; 
                     const nextPrediction = predictions.nextPrediction;
 
                     if (currentRound === undefined || nextPrediction === undefined) {
@@ -303,19 +389,43 @@
                     document.getElementById("nextRoundPrediction").textContent = nextPrediction;
                 } catch (error) {
                     console.error("Error fetching predictions:", error);
-                    document.getElementById("currentRound").textContent = "Error"; // Provide fallback UI feedback
-                    document.getElementById("nextRoundPrediction").textContent = "Error"; // Provide fallback UI feedback
+                    document.getElementById("currentRound").textContent = "Error"; 
+                    document.getElementById("nextRoundPrediction").textContent = "Error"; 
+                }
+            },
+
+            async submitFeedback(feedback) {
+                const url = "http://localhost:3000/api/feedback"; // Feedback submission endpoint
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ feedback }) // Wrap feedback in an object
+                    });
+
+                    const feedbackMessageElement = document.getElementById("feedbackMessage");
+                    if (response.ok) {
+                        feedbackMessageElement.textContent = "Thank you for your feedback!";
+                        document.getElementById("userFeedback").value = ""; // Clear input
+                    } else {
+                        throw new Error("Failed to submit feedback.");
+                    }
+                } catch (error) {
+                    console.error("Error submitting feedback:", error);
+                    const feedbackMessageElement = document.getElementById("feedbackMessage");
+                    feedbackMessageElement.textContent = "There was an error submitting your feedback. Please try again.";
                 }
             },
 
             updateChart() {
-                const labels = this.liveData.map(data => data.time); // Extract time for labels
-                const values = this.liveData.map(data => data.value); // Extract values for data
+                const labels = this.liveData.map(data => data.time); 
+                const values = this.liveData.map(data => data.value); 
 
                 this.chart.data.labels = labels;
                 this.chart.data.datasets[0].data = values;
 
-                // Reset the chart if it exceeds 100 entries
                 if (this.chart.data.labels.length >= 100) {
                     this.chart.data.labels.shift();
                     this.chart.data.datasets[0].data.shift();
@@ -328,7 +438,7 @@
                 this.chart = new Chart(ctx, {
                     type: "line",
                     data: {
-                        labels: [], // Initialized with empty labels
+                        labels: [], 
                         datasets: [{
                             label: "Live Data",
                             data: [],
